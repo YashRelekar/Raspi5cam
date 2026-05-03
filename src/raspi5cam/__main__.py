@@ -43,8 +43,10 @@ def main() -> int:
         print("Live preview started.  Press Ctrl+C to exit (or 'q' in the window).")
 
         while True:
-            frame = picam2.capture_array()  # RGB888 from libcamera
-            # libcamera may actually return BGR888; treat as BGR for display
+            # Although RGB888 is requested, libcamera often configures the
+            # stream as BGR888 in practice, so treat the array as BGR directly
+            # (no cvtColor needed — matches the colour handling in camera.py).
+            frame = picam2.capture_array()
             cv2.imshow("Raspi5cam", frame)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):

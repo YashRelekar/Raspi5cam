@@ -1,35 +1,14 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
 *.pyo
+
+# Build / install artifacts
+*.egg-info/
+dist/
+build/
+.eggs/
 
 # Virtual environment
 .venv/
 venv/
-env/
-
-# Distribution / packaging
-*.egg-info/
-dist/
-build/
-
-# TFLite / ML models (large binaries — download separately)
-models/*.tflite
-models/*.h5
-models/*.hdf5
-
-# Logs
-*.log
-
-# Editor
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# macOS
-.DS_Store
-
-# pytest
-.pytest_cache/

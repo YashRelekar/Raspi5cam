@@ -1,0 +1,38 @@
+# Raspi5cam – Python dependencies
+#
+# Raspberry Pi 5 + IMX219 facial emotion detection.
+#
+# Core requirements work on any platform.
+# Raspberry Pi–specific packages (picamera2, tflite-runtime) are listed
+# at the bottom with notes; install them only on the target hardware.
+
+# ── Configuration ─────────────────────────────────────────────────────────────
+PyYAML>=6.0
+
+# ── Numerical ─────────────────────────────────────────────────────────────────
+numpy>=1.24,<2
+
+# ── Computer vision ───────────────────────────────────────────────────────────
+# On Raspberry Pi OS Bookworm, python3-opencv from apt is usually preferred:
+#   sudo apt install python3-opencv
+# On other systems:
+#   pip install opencv-python
+opencv-python>=4.8
+
+# ── TFLite runtime for on-device inference ────────────────────────────────────
+# On Raspberry Pi OS Bookworm (64-bit, aarch64):
+#   pip install tflite-runtime
+# On development machines use the full TensorFlow package:
+#   pip install tensorflow
+tflite-runtime>=2.14; platform_machine == "aarch64"
+tensorflow>=2.14; platform_machine != "aarch64"
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest>=7.4
+pytest-mock>=3.11
+
+# ── Raspberry Pi camera (install on Pi only) ──────────────────────────────────
+# picamera2 is typically installed via apt on Raspberry Pi OS:
+#   sudo apt install python3-picamera2
+# Or via pip (may require --system-site-packages venv):
+#   pip install picamera2

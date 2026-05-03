@@ -1,133 +1,74 @@
-# Raspi5cam – Real-time Facial Emotion Detection
+# Raspi5cam
 
-Real-time facial emotion recognition for **Raspberry Pi 5** with the
-**IMX219** (Camera Module v2) sensor, adapted from the
-[tripletee](https://github.com/YashRelekar/tripletee) project.
-
-## What it does
-
-* Captures frames from the IMX219 camera via `picamera2`
-* Detects faces using OpenCV's Haar cascade
-* Classifies each face into one of 7 emotions using a lightweight
-  TFLite mini-XCEPTION model (trained on FER-2013):
-  **angry · disgust · fear · happy · sad · surprise · neutral**
-* Overlays colour-coded bounding boxes and emotion labels on a live
-  preview window
+Live camera preview for Raspberry Pi using Picamera2 and OpenCV.
 
 ---
 
-## Hardware requirements
+## Requirements
 
-| Component | Details |
-|-----------|---------|
-| Raspberry Pi 5 | Any RAM variant |
-| IMX219 camera | Camera Module v2 connected to the `cam0` port |
-| Raspberry Pi OS | Bookworm 64-bit (recommended) |
+* Raspberry Pi (any model with a camera port)
+* Raspberry Pi Camera Module (e.g. IMX219 / Camera Module v2)
+* Debian / Raspberry Pi OS (Bookworm or later recommended)
 
 ---
 
 ## Camera setup
 
-The IMX219 sensor needs a device-tree overlay to be loaded on boot.
-Open `/boot/firmware/config.txt` and add the following under the
-`[all]` section:
+Enable the camera overlay in `/boot/firmware/config.txt`:
 
 ```ini
 [all]
 dtoverlay=imx219,cam0
 ```
 
-Then **reboot**:
+Then reboot:
 
 ```bash
 sudo reboot
 ```
 
-Verify the camera is detected after rebooting:
+Verify the camera is detected:
 
 ```bash
 libcamera-hello --list-cameras
 ```
 
-You should see an entry for `imx219`.
-
 ---
 
-## Installation
+## Install dependencies (apt — recommended for Debian/Pi OS)
 
-### 1. Clone this repository
-
-```bash
-git clone https://github.com/YashRelekar/Raspi5cam.git
-cd Raspi5cam
-```
-
-### 2. Run the installer (as root)
+> **Use `apt`, not `pip`, for these packages on modern Raspberry Pi OS /
+> Debian.** Python 3.12+ wheels for `picamera2` and `opencv-python` are
+> often unavailable on PyPI/piwheels for `aarch64`, while the `apt`
+> packages work out of the box.
 
 ```bash
-sudo bash scripts/install.sh
-```
+sudo apt-get update
+sudo apt-get install -y python3-picamera2 python3-opencv
 
-The installer will:
-* Install system packages (`python3-picamera2`, `python3-opencv`, etc.)
-* Create a Python virtual environment at `.venv/`
-* Install Python dependencies from `requirements.txt`
-* Download the pre-built `face_emotion.tflite` model
-
-### 3. Activate the virtual environment
-
-```bash
-source .venv/bin/activate
-```
-
-### 4. Download the model manually (if the installer didn't)
-
-```bash
-bash scripts/download_models.sh
+# Optional – command-line camera tools for quick testing
+sudo apt-get install -y libcamera-apps
 ```
 
 ---
 
-## Usage
+## Run
+
+### Option A – install then run (recommended)
 
 ```bash
-# Live preview window (default)
-python emotion_detection.py
-
-# Custom config file
-python emotion_detection.py --config config.yaml
-
-# Headless mode (no display, e.g. over SSH)
-python emotion_detection.py --no-preview
-
-# Verbose debug output
-python emotion_detection.py --log-level DEBUG
+# From the repo root (picamera2 and opencv come from apt, not pip):
+pip install -e .
+python -m raspi5cam
 ```
 
-Press **`q`** in the preview window or **`Ctrl-C`** in the terminal to stop.
+### Option B – run without installing
 
----
-
-## Configuration
-
-All settings are in `config.yaml`:
-
-```yaml
-hardware:
-  camera:
-    device_index: 0      # IMX219 on cam0 → index 0
-    preview_window: true # set to false for headless use
-    width: 640
-    height: 480
-    fps: 15
-
-models:
-  face_emotion_model: "models/face_emotion.tflite"
-  confidence_threshold: 0.25   # raise to reduce false positives
-
-display:
-  show_confidence: true        # show % next to emotion label
+```bash
+PYTHONPATH=src python -m raspi5cam
 ```
+
+Press **Ctrl+C** (or **`q`** in the preview window) to exit.
 
 ---
 
@@ -135,35 +76,12 @@ display:
 
 ```
 Raspi5cam/
-├── emotion_detection.py   # main entry point
-├── config.yaml            # configuration
-├── requirements.txt
-├── models/
-│   └── face_emotion.tflite  # TFLite model (downloaded)
-├── scripts/
-│   ├── install.sh           # one-shot installer for Raspberry Pi
-│   ├── download_models.sh   # fetch the TFLite model
-│   └── build_face_model.py  # (optional) rebuild from source
-└── src/
-    ├── hardware/
-    │   └── camera.py        # picamera2 / OpenCV camera wrapper
-    ├── emotion/
-    │   └── face_emotion.py  # face detection + emotion classification
-    └── utils/
-        └── logger.py        # structured logging helper
-```
-
----
-
-## Building the model from source
-
-If you are on a machine with TensorFlow installed (e.g. a development
-laptop, not the Pi):
-
-```bash
-pip install tensorflow
-python3 scripts/build_face_model.py
-# Copy models/face_emotion.tflite to the Pi afterwards.
+├── src/
+│   └── raspi5cam/
+│       ├── __init__.py   # package marker
+│       └── __main__.py   # entry point: python -m raspi5cam
+├── old/                  # prior code kept for reference
+└── README.md
 ```
 
 ---
@@ -172,17 +90,7 @@ python3 scripts/build_face_model.py
 
 | Symptom | Fix |
 |---------|-----|
-| `Cannot open camera device 0` | Check `dtoverlay=imx219,cam0` in `/boot/firmware/config.txt` and reboot |
-| `picamera2 not available` | Install with `sudo apt install python3-picamera2` |
-| `Face emotion model not found` | Run `bash scripts/download_models.sh` |
-| Blue skin tones in preview | Expected behaviour — libcamera configures BGR output internally |
-| No faces detected | Improve lighting; move closer to camera; lower `confidence_threshold` |
-
----
-
-## Acknowledgements
-
-* [oarriaga/face_classification](https://github.com/oarriaga/face_classification) –
-  the FER-2013 mini-XCEPTION model (MIT licence)
-* [tripletee](https://github.com/YashRelekar/tripletee) – original project
-  this is adapted from
+| `Could not import Picamera2` | `sudo apt-get install -y python3-picamera2` |
+| `Could not import OpenCV` | `sudo apt-get install -y python3-opencv` |
+| `Cannot open camera device` | Check `dtoverlay=imx219,cam0` in `/boot/firmware/config.txt` and reboot |
+| No preview window appears | Ensure you have a display connected (HDMI) or use `DISPLAY=:0` |

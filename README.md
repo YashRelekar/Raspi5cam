@@ -4,6 +4,38 @@ Real-time facial emotion recognition for **Raspberry Pi 5** with the
 **IMX219** (Camera Module v2) sensor, adapted from the
 [tripletee](https://github.com/YashRelekar/tripletee) project.
 
+---
+
+## Step 1 – Live camera preview (start here)
+
+This is the minimal entry point: pull the repo on your Pi and run a live
+camera preview in one command.
+
+### Clone & install dependencies
+
+```bash
+git clone https://github.com/YashRelekar/Raspi5cam.git
+cd Raspi5cam
+sudo apt-get update
+sudo apt-get install -y python3-picamera2 python3-opencv
+```
+
+### (Optional) install as an editable package
+
+```bash
+pip install -e .
+```
+
+### Run the preview
+
+```bash
+python3 -m raspi5cam
+```
+
+Press **Ctrl+C** in the terminal or **`q`** in the preview window to stop.
+
+---
+
 ## What it does
 
 * Captures frames from the IMX219 camera via `picamera2`
@@ -135,7 +167,8 @@ display:
 
 ```
 Raspi5cam/
-├── emotion_detection.py   # main entry point
+├── pyproject.toml         # package metadata (pip install -e .)
+├── emotion_detection.py   # full emotion-detection entry point
 ├── config.yaml            # configuration
 ├── requirements.txt
 ├── models/
@@ -145,6 +178,9 @@ Raspi5cam/
 │   ├── download_models.sh   # fetch the TFLite model
 │   └── build_face_model.py  # (optional) rebuild from source
 └── src/
+    ├── raspi5cam/
+    │   ├── __init__.py      # package marker
+    │   └── __main__.py      # step-1 live preview (python3 -m raspi5cam)
     ├── hardware/
     │   └── camera.py        # picamera2 / OpenCV camera wrapper
     ├── emotion/

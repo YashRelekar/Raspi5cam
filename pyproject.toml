@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "raspi5cam"
+version = "0.1.0"
+description = "Raspberry Pi 5 camera preview and utilities"
+requires-python = ">=3.10"
+# Runtime deps are installed via apt on the Pi:
+#   sudo apt-get install -y python3-picamera2 python3-opencv
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
